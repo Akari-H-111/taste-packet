@@ -59,7 +59,7 @@ if rel["is_blocked"]:      interaction_byte |= (1 << 7)
 # Row 3 資料前兩個位元組：[熱度級距, 社交Bitmask]
 row3_data = [mock_tweet["hot_level"], interaction_byte]
 
-# 5. 實作 Rust security.rs 的安全碼生成公式 (縱向交叉 XOR)
+# 5. 實作 TypeScript security.ts 的安全碼生成公式 (縱向交叉 XOR)
 # Byte 14 守護 Column 2 (包含視覺色 C: row0_visual[2])
 safety_code_14 = row0_visual[2] ^ row1_motion[2] ^ row2_layout[2]
 # Byte 15 守護 Column 1 (包含社交 Bitmask: row3_data[1])
@@ -84,15 +84,15 @@ corrupted_packet[13] = 0x00 # 社交 Bitmask 遺失
 print(f" -> 💥 丟包發生！抵達手機網卡的破損封包: {[hex(b) for b in corrupted_packet]}")
 
 # =====================================================================
-# ⚙️ 階段三：前端環境分流與背景 Wasm 無損修補 (Client Dispatch & Repair)
+# ⚙️ 階段三：前端環境本地無損修補 (Client Synchronous Repair)
 # =====================================================================
 print("\n[階段三] 前端 SDK 啟動處理管線...")
 
-# 模擬 dispatcher.ts 判定：設備支援 Wasm 與 WebGL，分流至背景線程處理
-print(" -> [Dispatcher] 判定為 STAGE_B 等級設備，建立 Web Worker 非阻塞隔離牆。")
-print(" -> [WorkerPool] 16-Byte 傳入背景執行緒，調用 Rust Wasm 安全核心...")
+# 在 TypeScript 中，這一律在主執行緒瞬間完成
+print(" -> [Decoder] 接收到殘缺矩陣，偵測到丟包。")
+print(" -> [Security] 啟動本地端安全核心...")
 
-# 實作 Rust xtaste-core/src/security.rs 的本地端自我修復邏輯
+# 實作 TypeScript security.ts 的本地端自我修復邏輯
 repaired_packet = corrupted_packet.copy()
 
 # 🥊 XOR 組合拳第一式：利用安全碼 14，召回 Column 2 的視覺色 C
