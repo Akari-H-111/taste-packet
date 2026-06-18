@@ -1,0 +1,16 @@
+# Node.js
+node_modules/
+dist/
+*.js.map
+
+# Rust / Cargo
+target/
+**/*.rs.bk
+
+# Wasm generated
+wasm_generated/
+
+# OS
+.DS_Store
+*.log
+coverage/

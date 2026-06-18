@@ -1,0 +1,16 @@
+{
+  "name": "xtaste-client-sdk",
+  "version": "1.0.0",
+  "description": "TypeScript SDK for the X-Taste protocol, featuring WebGPU and Web Worker parallel dispatching.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}
