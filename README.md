@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 > *"He says nothing. He writes one line. It works."*
-
+> — Inspired by [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)
 ---
 
 ## 🐎 A Minimalist's Greeting
