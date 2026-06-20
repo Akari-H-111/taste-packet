@@ -1,0 +1,33 @@
+{
+  "name": "taste-packet",
+  "version": "1.0.0",
+  "description": "> *\"He says nothing. He writes one line. It works.\"*",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "npm run dev --prefix xtaste-client-sdk",
+    "test": "npm run build && node tests/e2e_integration_test.js",
+    "benchmark": "npm run build && node tests/simulate_twitter_api.js",
+    "build": "npm run build --prefix xtaste-client-sdk"
+  },
+  "keywords": [
+    "taste",
+    "binary-protocol",
+    "zero-allocation",
+    "typescript",
+    "social-network"
+  ],
+  "author": "Akari Hayami",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akari-H-111/taste-packet.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Akari-H-111/taste-packet/issues"
+  },
+  "homepage": "https://github.com/Akari-H-111/taste-packet#readme",
+  "type": "module"
+}

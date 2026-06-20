@@ -1,12 +1,28 @@
 {
   "name": "xtaste-client-sdk",
   "version": "1.0.0",
-  "description": "TypeScript SDK for the X-Taste protocol, featuring WebGPU and Web Worker parallel dispatching.",
+  "description": "TypeScript SDK for the X-Taste protocol, purely synchronous, zero-dependency 16-byte semantic matrix operations.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc"
+    "build": "rm -rf dist && tsc",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "taste",
+    "sdk",
+    "binary-protocol",
+    "zero-dependency"
+  ],
+  "author": "Akari Hayami",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akari-H-111/taste-packet.git"
   },
   "dependencies": {},
   "devDependencies": {

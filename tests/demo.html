@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Taste Visual Hydration Demo</title>
+    <style>
+        :root {
+            --bg-color: #0f1419;
+            --text-color: #e7e9ea;
+            --border-color: #2f3336;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #timeline {
+            width: 100%;
+            max-width: 600px;
+        }
+        .tweet-skeleton {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .header-skel { display: flex; gap: 12px; align-items: center; }
+        .avatar-skel { width: 48px; height: 48px; border-radius: 50%; background: #2f3336; }
+        .name-skel { width: 120px; height: 16px; border-radius: 4px; background: #2f3336; }
+        
+        .text-skel { height: 16px; border-radius: 4px; background: #2f3336; }
+        
+        /* The magic: CSS Gradient from Row 0 Vertex Colors */
+        .media-skel {
+            width: 100%;
+            border-radius: 12px;
+            /* Placeholder height; will be adjusted by JS based on LayoutSpec */
+            height: 250px; 
+            background: linear-gradient(135deg, var(--color-a), var(--color-b), var(--color-c), var(--color-d));
+            background-size: 200% 200%;
+            animation: flow 4s ease infinite;
+        }
+        
+        @keyframes flow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .actions-skel {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 8px;
+        }
+        .action-icon {
+            width: 20px; height: 20px; border-radius: 50%; background: #2f3336;
+        }
+        .action-liked { background: #f91880; } /* Pink color for liked */
+
+        #stats {
+            background: #1d9bf0;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-weight: bold;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="stats">X-Taste Hydrating...</div>
+    <div id="timeline"></div>
+
+    <!-- Compile the SDK locally in the browser for demo purposes -->
+    <script type="module">
+        // Since we are in a simple HTML file without a bundler, we will mock the Decoder locally 
+        // to show exactly how it works with the Bitmask and Colors, simulating what happens after 
+        // receiving the 16-byte payload.
+        
+        // Mock of InteractionBitmask
+        const Mask = {
+            LIKED: 0x01, REPOSTED: 0x02, COMMENTED: 0x04, BOOKMARKED: 0x08,
+            CLOSE_FRIEND: 0x10, FOLLOWING: 0x20, MUTED: 0x40, BLOCKED: 0x80,
+        };
+
+        // A tiny 16-color shared palette simulating what the client has cached
+        const PALETTE = [
+            '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#D3B8FF', '#FFB8E0', '#FFD1D1',
+            '#1DA1F2', '#14171A', '#657786', '#AAB8C2', '#E1E8ED', '#F5F8FA', '#FFFFFF', '#000000'
+        ];
+
+        // Simulate receiving 10 binary packets (16 bytes each) from the adapter
+        function generateFakeTastePackets() {
+            const packets = [];
+            for(let i=0; i<10; i++) {
+                const buf = new Uint8Array(16);
+                // Row 0: Visuals (0-15 indices)
+                buf[0] = Math.floor(Math.random() * 16);
+                buf[1] = Math.floor(Math.random() * 16);
+                buf[2] = Math.floor(Math.random() * 16);
+                buf[3] = Math.floor(Math.random() * 16);
+                // Row 2: Text Length & Media Height
+                buf[8] = Math.floor(Math.random() * 3); // 0, 1, 2 layout
+                buf[11] = Math.floor(Math.random() * 200) + 50; // text length
+                // Row 3: Interaction
+                buf[13] = Math.random() > 0.5 ? Mask.LIKED : 0x00; 
+                packets.push(buf);
+            }
+            return packets;
+        }
+
+        const packets = generateFakeTastePackets();
+        const timeline = document.getElementById('timeline');
+        
+        const startTime = performance.now();
+
+        packets.forEach(buf => {
+            // Hydration (0-CPU cost mapping)
+            const colorA = PALETTE[buf[0]];
+            const colorB = PALETTE[buf[1]];
+            const colorC = PALETTE[buf[2]];
+            const colorD = PALETTE[buf[3]];
+            
+            const isLiked = (buf[13] & Mask.LIKED) !== 0;
+            const textLines = Math.max(1, Math.floor(buf[11] / 60)); // Simulate lines based on byte 11
+            const mediaHeight = buf[8] === 0 ? '0px' : (buf[8] === 1 ? '250px' : '400px');
+
+            // Build DOM
+            const el = document.createElement('div');
+            el.className = 'tweet-skeleton';
+            
+            // Map colors to CSS variables for GPU interpolation
+            el.style.setProperty('--color-a', colorA);
+            el.style.setProperty('--color-b', colorB);
+            el.style.setProperty('--color-c', colorC);
+            el.style.setProperty('--color-d', colorD);
+
+            let html = `
+                <div class="header-skel">
+                    <div class="avatar-skel"></div>
+                    <div class="name-skel"></div>
+                </div>
+            `;
+            
+            for(let i=0; i<textLines; i++) {
+                html += `<div class="text-skel" style="width: ${i===textLines-1 ? '60%' : '100%'}"></div>`;
+            }
+
+            if(mediaHeight !== '0px') {
+                html += `<div class="media-skel" style="height: ${mediaHeight}"></div>`;
+            }
+
+            html += `
+                <div class="actions-skel">
+                    <div class="action-icon"></div>
+                    <div class="action-icon"></div>
+                    <div class="action-icon ${isLiked ? 'action-liked' : ''}"></div>
+                    <div class="action-icon"></div>
+                </div>
+            `;
+
+            el.innerHTML = html;
+            timeline.appendChild(el);
+        });
+
+        const endTime = performance.now();
+        document.getElementById('stats').innerText = `10 Previews Hydrated in ${(endTime - startTime).toFixed(2)} ms`;
+    </script>
+</body>
+</html>

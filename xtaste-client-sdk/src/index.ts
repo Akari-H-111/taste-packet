@@ -13,7 +13,5 @@ export type { RawPostData } from './core/encoder.js';
 export { TasteDecoder } from './core/decoder.js';
 export type { PreviewCard } from './core/decoder.js';
 
-export { TasteSecurity, CorruptedField } from './core/security.js';
-
 export { InteractionBitmask, Mask } from './core/bitmask.js';
 export type { SocialState } from './core/bitmask.js';

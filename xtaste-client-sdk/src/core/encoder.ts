@@ -5,10 +5,10 @@
  * object (text, media, social state, engagement metrics) and crushes it down
  * to 16 bytes using:
  *
- *   • MurmurHash3-inspired color hashing for visual palette generation
+ *   • djb2-inspired color hashing for visual palette generation
  *   • Logarithmic bucketing for engagement metrics
  *   • Bitmask packing for social state
- *   • Cross-XOR safety code sealing
+ *   • Strict protocol versioning
  *
  * The output is ready to be stored in Redis as a raw binary string, or sent
  * directly over a QUIC DATAGRAM frame.
@@ -16,7 +16,6 @@
 
 import { TasteMatrix, Field } from './matrix.js';
 import { InteractionBitmask, type SocialState } from './bitmask.js';
-import { TasteSecurity } from './security.js';
 
 /** Input structure representing a social media post. */
 export interface RawPostData {
@@ -49,8 +48,7 @@ export class TasteEncoder {
   /**
    * Project a RawPostData object onto a sealed 16-byte matrix.
    *
-   * The returned matrix has its safety codes pre-computed and is ready for
-   * storage or transmission.
+   * The returned matrix is ready for storage or transmission.
    */
   static encode(post: RawPostData): TasteMatrix {
     const m = new TasteMatrix();
@@ -79,12 +77,13 @@ export class TasteEncoder {
     m.set(Field.MediaType,    post.mediaType & 0x0f);
     m.set(Field.TextLength,   TasteEncoder.logScale(post.text.length, 1000));
 
-    // ── Row 3: State & Security ────────────────────────────────────────
+    // ── Row 3: State & Versioning ──────────────────────────────────────
     m.set(Field.HotBucket,   TasteEncoder.engagementBucket(post.engagement));
     m.set(Field.Interaction, InteractionBitmask.encode(post.socialState));
 
-    // Seal: compute and write safety codes into Bytes 14 & 15.
-    TasteSecurity.seal(m.buf);
+    // Versioning: Byte 14 is reserved, Byte 15 is Protocol Version.
+    m.set(Field.Reserved14, 0x00);
+    m.set(Field.ProtocolVersion, 0x01);
 
     return m;
   }
