@@ -1,6 +1,7 @@
 # Project .taste
 
 [![CI Build](https://github.com/Akari-H-111/taste-packet/actions/workflows/ci.yml/badge.svg)](https://github.com/Akari-H-111/taste-packet/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/xtaste-client-sdk.svg)](https://www.npmjs.com/package/xtaste-client-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 > *"He says nothing. He writes one line. It works."*
@@ -62,12 +63,16 @@ the background after the client has reserved the correct geometry.
 
 ## Usage
 
-The SDK source lives in `xtaste-client-sdk/` and has no runtime dependencies.
-After `npm run setup` and `npm run build`, import it from a Node.js or edge
-application like this:
+Install the zero-runtime-dependency SDK in a Node.js or edge application:
+
+```bash
+npm install xtaste-client-sdk
+```
+
+Then import it like this:
 
 ```typescript
-import { TasteEncoder, TasteDecoder } from './xtaste-client-sdk/dist/index.js';
+import { TasteEncoder, TasteDecoder } from 'xtaste-client-sdk';
 
 const packet = TasteEncoder.encode({
   postId: '1829384756',
@@ -97,6 +102,9 @@ console.log(preview.state.social.liked); // true
 `TasteEncoder` is the server or edge projection step. `TasteDecoder` is the
 client hydration step. The transport remains responsible for delivery,
 retransmission, and ordering; the protocol only defines the compact preview.
+
+For SDK development inside this repository, use `npm run setup` followed by
+`npm run build` instead.
 
 ## Verification
 
