@@ -1,8 +1,8 @@
 /**
  * @file index.ts
- * @description X-Taste Protocol - Zero-dependency 16-byte semantic matrix encoder/decoder.
+ * @description Project .taste protocol - zero-dependency 16-byte semantic preview encoder/decoder.
  */
-export { TasteMatrix, Field } from './core/matrix.js';
+export { TasteMatrix, Field, PACKET_BYTES, PROTOCOL_VERSION, } from './core/matrix.js';
 export type { MatrixBuffer } from './core/matrix.js';
 export { TasteEncoder } from './core/encoder.js';
 export type { RawPostData } from './core/encoder.js';

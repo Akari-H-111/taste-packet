@@ -1,12 +1,12 @@
 import { TasteEncoder } from '../xtaste-client-sdk/dist/core/encoder.js';
 
-// Simulate a Sparse Fieldsets response from Twitter API v2
+// Simulate a representative social timeline API response.
 function generateMockTwitterTimeline(count) {
     const timeline = [];
     for (let i = 0; i < count; i++) {
         timeline.push({
             id: `182938475${String(i).padStart(3, '0')}`,
-            text: "This is a simulated tweet to test the X-Taste compression ratio. It includes various metadata fields common in Twitter API v2 responses. #testing #performance",
+            text: "This is a simulated post used to measure the Project .taste payload ratio. It includes metadata fields common in social timeline API responses. #testing #performance",
             public_metrics: {
                 retweet_count: (i * 37) % 1000,
                 reply_count: (i * 19) % 500,
@@ -34,12 +34,12 @@ const jsonString = JSON.stringify(twitterJson);
 const originalSizeBytes = Buffer.byteLength(jsonString, 'utf8');
 
 console.log(`=================================================`);
-console.log(`🚀 Phase A: X-Taste Cross-Platform Drop-In Capability (Twitter v2 Mock)`);
+console.log(`Project .taste benchmark (representative timeline mock)`);
 console.log(`=================================================`);
-console.log(`[Baseline] 100 Twitter v2 JSON payload size: ${(originalSizeBytes / 1024).toFixed(2)} KB (${originalSizeBytes} Bytes)`);
+console.log(`[Baseline] 100 JSON posts: ${(originalSizeBytes / 1024).toFixed(2)} KB (${originalSizeBytes} bytes)`);
 
 // Simulate Adapter Middleware: Map Twitter format to .taste RawPostData
-console.log(`\n[Adapter] Initiating Data Dehydration...`);
+console.log(`\n[Encoder] Encoding 100 semantic previews...`);
 const tasteBuffer = new Uint8Array(TWEET_COUNT * 16); // 100 posts strictly = 1600 bytes
 
 const startTime = performance.now();
@@ -77,8 +77,8 @@ const endTime = performance.now();
 const newSizeBytes = tasteBuffer.byteLength;
 const compressionRatio = ((1 - (newSizeBytes / originalSizeBytes)) * 100).toFixed(2);
 
-console.log(` -> Dehydration Complete! Time elapsed: ${(endTime - startTime).toFixed(3)} ms (Pure synchronous bitwise operations)`);
-console.log(`[X-Taste] 100 .taste packets total size: ${(newSizeBytes / 1024).toFixed(2)} KB (${newSizeBytes} Bytes)`);
+console.log(`[Encoder] Completed in ${(endTime - startTime).toFixed(3)} ms`);
+console.log(`[Project .taste] 100 packets: ${(newSizeBytes / 1024).toFixed(2)} KB (${newSizeBytes} bytes)`);
 console.log(`-------------------------------------------------`);
-console.log(`📉 Bandwidth Savings: ${compressionRatio}% (0 dependencies, 0 WebAssembly)`);
+console.log(`[Result] ${compressionRatio}% fewer bytes (0 runtime dependencies)`);
 console.log(`=================================================`);

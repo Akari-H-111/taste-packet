@@ -26,7 +26,7 @@ export interface SocialState {
     muted: boolean;
     blocked: boolean;
 }
-export declare const enum Mask {
+export declare enum Mask {
     LIKED = 1,
     REPOSTED = 2,
     COMMENTED = 4,
@@ -49,7 +49,7 @@ export declare class InteractionBitmask {
     static decode(byte: number): SocialState;
     /**
      * Toggle a single flag via bitwise OR (set) or AND-NOT (clear).
-     * Returns the updated byte.  No allocation, no branching.
+     * Returns the updated byte without allocating an object.
      */
     static toggle(byte: number, mask: Mask, on: boolean): number;
 }

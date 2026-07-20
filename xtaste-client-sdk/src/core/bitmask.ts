@@ -28,7 +28,7 @@ export interface SocialState {
   blocked:      boolean;
 }
 
-export const enum Mask {
+export enum Mask {
   LIKED        = 0x01,
   REPOSTED     = 0x02,
   COMMENTED    = 0x04,
@@ -76,7 +76,7 @@ export class InteractionBitmask {
 
   /**
    * Toggle a single flag via bitwise OR (set) or AND-NOT (clear).
-   * Returns the updated byte.  No allocation, no branching.
+   * Returns the updated byte without allocating an object.
    */
   static toggle(byte: number, mask: Mask, on: boolean): number {
     return on ? byte | mask : byte & ~mask;

@@ -1,6 +1,6 @@
 {
   "name": "taste-packet",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A 16-byte semantic matrix protocol for instant social timeline previews.",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
   "keywords": [
     "taste",
     "binary-protocol",
-    "zero-allocation",
+    "zero-dependency",
     "typescript",
     "social-network"
   ],

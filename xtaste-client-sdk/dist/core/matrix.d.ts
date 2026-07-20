@@ -2,9 +2,8 @@
  * matrix.ts — The fixed-size 16-byte semantic matrix.
  *
  * The matrix is the atomic unit of the .taste protocol.  It is always exactly
- * 16 bytes — never more, never less.  This invariant lets us skip all dynamic
- * memory allocation on both server and client, and guarantees that a single
- * UDP datagram can carry dozens of previews without fragmentation.
+ * 16 bytes — never more, never less.  This invariant gives every client a
+ * predictable allocation and transport size.
  *
  * Layout (column-major byte indices):
  *
@@ -17,8 +16,10 @@
 export type MatrixBuffer = Uint8Array & {
     readonly length: 16;
 };
+export declare const PACKET_BYTES = 16;
+export declare const PROTOCOL_VERSION = 1;
 /** Byte offsets for every field in the matrix. */
-export declare const enum Field {
+export declare enum Field {
     VertexColorA = 0,
     VertexColorB = 1,
     VertexColorC = 2,
@@ -38,7 +39,7 @@ export declare const enum Field {
 }
 export declare class TasteMatrix {
     /** The underlying 16-byte buffer. */
-    readonly buf: Uint8Array;
+    readonly buf: MatrixBuffer;
     constructor(source?: Uint8Array | number[]);
     /** Read a single field. */
     get(field: Field): number;

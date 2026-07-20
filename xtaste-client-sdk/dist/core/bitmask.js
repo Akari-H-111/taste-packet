@@ -16,6 +16,17 @@
  *   Bit 1   REPOSTED       User has reposted this post
  *   Bit 0   LIKED          User has liked this post
  */
+export var Mask;
+(function (Mask) {
+    Mask[Mask["LIKED"] = 1] = "LIKED";
+    Mask[Mask["REPOSTED"] = 2] = "REPOSTED";
+    Mask[Mask["COMMENTED"] = 4] = "COMMENTED";
+    Mask[Mask["BOOKMARKED"] = 8] = "BOOKMARKED";
+    Mask[Mask["CLOSE_FRIEND"] = 16] = "CLOSE_FRIEND";
+    Mask[Mask["FOLLOWING"] = 32] = "FOLLOWING";
+    Mask[Mask["MUTED"] = 64] = "MUTED";
+    Mask[Mask["BLOCKED"] = 128] = "BLOCKED";
+})(Mask || (Mask = {}));
 export class InteractionBitmask {
     /**
      * Pack a human-readable SocialState object into a single byte.
@@ -24,21 +35,21 @@ export class InteractionBitmask {
     static encode(state) {
         let byte = 0;
         if (state.liked)
-            byte |= 1 /* Mask.LIKED */;
+            byte |= Mask.LIKED;
         if (state.reposted)
-            byte |= 2 /* Mask.REPOSTED */;
+            byte |= Mask.REPOSTED;
         if (state.commented)
-            byte |= 4 /* Mask.COMMENTED */;
+            byte |= Mask.COMMENTED;
         if (state.bookmarked)
-            byte |= 8 /* Mask.BOOKMARKED */;
+            byte |= Mask.BOOKMARKED;
         if (state.closeFriend)
-            byte |= 16 /* Mask.CLOSE_FRIEND */;
+            byte |= Mask.CLOSE_FRIEND;
         if (state.following)
-            byte |= 32 /* Mask.FOLLOWING */;
+            byte |= Mask.FOLLOWING;
         if (state.muted)
-            byte |= 64 /* Mask.MUTED */;
+            byte |= Mask.MUTED;
         if (state.blocked)
-            byte |= 128 /* Mask.BLOCKED */;
+            byte |= Mask.BLOCKED;
         return byte;
     }
     /**
@@ -47,19 +58,19 @@ export class InteractionBitmask {
      */
     static decode(byte) {
         return {
-            liked: (byte & 1 /* Mask.LIKED */) !== 0,
-            reposted: (byte & 2 /* Mask.REPOSTED */) !== 0,
-            commented: (byte & 4 /* Mask.COMMENTED */) !== 0,
-            bookmarked: (byte & 8 /* Mask.BOOKMARKED */) !== 0,
-            closeFriend: (byte & 16 /* Mask.CLOSE_FRIEND */) !== 0,
-            following: (byte & 32 /* Mask.FOLLOWING */) !== 0,
-            muted: (byte & 64 /* Mask.MUTED */) !== 0,
-            blocked: (byte & 128 /* Mask.BLOCKED */) !== 0,
+            liked: (byte & Mask.LIKED) !== 0,
+            reposted: (byte & Mask.REPOSTED) !== 0,
+            commented: (byte & Mask.COMMENTED) !== 0,
+            bookmarked: (byte & Mask.BOOKMARKED) !== 0,
+            closeFriend: (byte & Mask.CLOSE_FRIEND) !== 0,
+            following: (byte & Mask.FOLLOWING) !== 0,
+            muted: (byte & Mask.MUTED) !== 0,
+            blocked: (byte & Mask.BLOCKED) !== 0,
         };
     }
     /**
      * Toggle a single flag via bitwise OR (set) or AND-NOT (clear).
-     * Returns the updated byte.  No allocation, no branching.
+     * Returns the updated byte without allocating an object.
      */
     static toggle(byte, mask, on) {
         return on ? byte | mask : byte & ~mask;

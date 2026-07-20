@@ -32,6 +32,8 @@ export interface PreviewCard {
     protocolVersion: number;
 }
 export declare class TasteDecoder {
+    /** Return whether a buffer is a supported .taste packet. */
+    static supports(raw: Uint8Array): boolean;
     /**
      * Decode a 16-byte buffer into a structured preview card.
      */

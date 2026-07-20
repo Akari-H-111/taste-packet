@@ -1,32 +1,50 @@
 {
   "name": "xtaste-client-sdk",
-  "version": "1.0.0",
-  "description": "TypeScript SDK for the X-Taste protocol, purely synchronous, zero-dependency 16-byte semantic matrix operations.",
+  "version": "1.1.0",
+  "description": "Zero-dependency TypeScript SDK for deterministic 16-byte semantic preview packets.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
     "dev": "tsc --watch"
   },
   "keywords": [
     "taste",
     "sdk",
     "binary-protocol",
+    "serialization",
+    "web-performance",
     "zero-dependency"
   ],
   "author": "Akari Hayami",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Akari-H-111/taste-packet.git"
+    "url": "git+https://github.com/Akari-H-111/taste-packet.git",
+    "directory": "xtaste-client-sdk"
   },
-  "dependencies": {},
+  "homepage": "https://github.com/Akari-H-111/taste-packet#readme",
+  "bugs": {
+    "url": "https://github.com/Akari-H-111/taste-packet/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.4.0"
   }
 }

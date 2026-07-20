@@ -7,43 +7,51 @@
  *
  * This module runs synchronously in the main thread and never touches the DOM.
  */
-import { TasteMatrix } from './matrix.js';
+import { TasteMatrix, Field, PACKET_BYTES, PROTOCOL_VERSION, } from './matrix.js';
 import { InteractionBitmask } from './bitmask.js';
 export class TasteDecoder {
+    /** Return whether a buffer is a supported .taste packet. */
+    static supports(raw) {
+        return raw.length === PACKET_BYTES && raw[Field.ProtocolVersion] === PROTOCOL_VERSION;
+    }
     /**
      * Decode a 16-byte buffer into a structured preview card.
      */
     static decode(raw) {
-        if (raw.length !== 16) {
-            throw new RangeError(`Expected 16 bytes, got ${raw.length}`);
+        if (raw.length !== PACKET_BYTES) {
+            throw new RangeError(`Expected ${PACKET_BYTES} bytes, got ${raw.length}`);
+        }
+        const protocolVersion = raw[Field.ProtocolVersion];
+        if (protocolVersion !== PROTOCOL_VERSION) {
+            throw new RangeError(`Unsupported protocol version ${protocolVersion}`);
         }
         const m = new TasteMatrix(raw);
         return {
             visual: {
                 vertexColors: [
-                    m.get(0 /* Field.VertexColorA */),
-                    m.get(1 /* Field.VertexColorB */),
-                    m.get(2 /* Field.VertexColorC */),
-                    m.get(3 /* Field.VertexColorD */),
+                    m.get(Field.VertexColorA),
+                    m.get(Field.VertexColorB),
+                    m.get(Field.VertexColorC),
+                    m.get(Field.VertexColorD),
                 ],
             },
             motion: {
-                emotionBase: m.get(4 /* Field.EmotionBase */),
-                animVelocity: m.get(5 /* Field.AnimVelocity */),
-                grainTexture: m.get(6 /* Field.GrainTexture */),
-                lightField: m.get(7 /* Field.LightField */),
+                emotionBase: m.get(Field.EmotionBase),
+                animVelocity: m.get(Field.AnimVelocity),
+                grainTexture: m.get(Field.GrainTexture),
+                lightField: m.get(Field.LightField),
             },
             layout: {
-                spec: m.get(8 /* Field.UILayoutSpec */),
-                density: m.get(9 /* Field.ElemDensity */),
-                mediaType: m.get(10 /* Field.MediaType */),
-                textLength: m.get(11 /* Field.TextLength */),
+                spec: m.get(Field.UILayoutSpec),
+                density: m.get(Field.ElemDensity),
+                mediaType: m.get(Field.MediaType),
+                textLength: m.get(Field.TextLength),
             },
             state: {
-                hotBucket: m.get(12 /* Field.HotBucket */),
-                social: InteractionBitmask.decode(m.get(13 /* Field.Interaction */)),
+                hotBucket: m.get(Field.HotBucket),
+                social: InteractionBitmask.decode(m.get(Field.Interaction)),
             },
-            protocolVersion: m.get(15 /* Field.ProtocolVersion */),
+            protocolVersion,
         };
     }
 }

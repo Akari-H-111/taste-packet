@@ -10,8 +10,7 @@
  *   • Bitmask packing for social state
  *   • Strict protocol versioning
  *
- * The output is ready to be stored in Redis as a raw binary string, or sent
- * directly over a QUIC DATAGRAM frame.
+ * The output is ready for storage or transport as raw binary data.
  */
 import { TasteMatrix } from './matrix.js';
 import { type SocialState } from './bitmask.js';
@@ -36,11 +35,13 @@ export interface RawPostData {
 }
 export declare class TasteEncoder {
     /**
-     * Project a RawPostData object onto a sealed 16-byte matrix.
+     * Project a RawPostData object onto a 16-byte matrix.
      *
      * The returned matrix is ready for storage or transmission.
      */
     static encode(post: RawPostData): TasteMatrix;
+    private static assertPost;
+    private static assertInteger;
     /**
      * A fast, non-cryptographic 32-bit hash for deterministic color generation.
      * Based on the djb2 algorithm.

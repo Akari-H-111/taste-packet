@@ -8,7 +8,12 @@
  * This module runs synchronously in the main thread and never touches the DOM.
  */
 
-import { TasteMatrix, Field } from './matrix.js';
+import {
+  TasteMatrix,
+  Field,
+  PACKET_BYTES,
+  PROTOCOL_VERSION,
+} from './matrix.js';
 import { InteractionBitmask, type SocialState } from './bitmask.js';
 
 /** The fully hydrated preview card description. */
@@ -36,12 +41,21 @@ export interface PreviewCard {
 }
 
 export class TasteDecoder {
+  /** Return whether a buffer is a supported .taste packet. */
+  static supports(raw: Uint8Array): boolean {
+    return raw.length === PACKET_BYTES && raw[Field.ProtocolVersion] === PROTOCOL_VERSION;
+  }
+
   /**
    * Decode a 16-byte buffer into a structured preview card.
    */
   static decode(raw: Uint8Array): PreviewCard {
-    if (raw.length !== 16) {
-      throw new RangeError(`Expected 16 bytes, got ${raw.length}`);
+    if (raw.length !== PACKET_BYTES) {
+      throw new RangeError(`Expected ${PACKET_BYTES} bytes, got ${raw.length}`);
+    }
+    const protocolVersion = raw[Field.ProtocolVersion];
+    if (protocolVersion !== PROTOCOL_VERSION) {
+      throw new RangeError(`Unsupported protocol version ${protocolVersion}`);
     }
 
     const m = new TasteMatrix(raw);
@@ -71,7 +85,7 @@ export class TasteDecoder {
         hotBucket: m.get(Field.HotBucket),
         social:    InteractionBitmask.decode(m.get(Field.Interaction)),
       },
-      protocolVersion: m.get(Field.ProtocolVersion),
+      protocolVersion,
     };
   }
 }

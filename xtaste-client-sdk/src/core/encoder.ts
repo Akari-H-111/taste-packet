@@ -10,12 +10,22 @@
  *   • Bitmask packing for social state
  *   • Strict protocol versioning
  *
- * The output is ready to be stored in Redis as a raw binary string, or sent
- * directly over a QUIC DATAGRAM frame.
+ * The output is ready for storage or transport as raw binary data.
  */
 
-import { TasteMatrix, Field } from './matrix.js';
+import { TasteMatrix, Field, PROTOCOL_VERSION } from './matrix.js';
 import { InteractionBitmask, type SocialState } from './bitmask.js';
+
+const SOCIAL_STATE_KEYS = [
+  'liked',
+  'reposted',
+  'commented',
+  'bookmarked',
+  'closeFriend',
+  'following',
+  'muted',
+  'blocked',
+] as const;
 
 /** Input structure representing a social media post. */
 export interface RawPostData {
@@ -46,11 +56,12 @@ export interface RawPostData {
 
 export class TasteEncoder {
   /**
-   * Project a RawPostData object onto a sealed 16-byte matrix.
+   * Project a RawPostData object onto a 16-byte matrix.
    *
    * The returned matrix is ready for storage or transmission.
    */
   static encode(post: RawPostData): TasteMatrix {
+    TasteEncoder.assertPost(post);
     const m = new TasteMatrix();
 
     // ── Row 0: Visual Ambiance ─────────────────────────────────────────
@@ -72,9 +83,9 @@ export class TasteEncoder {
     m.set(Field.LightField,   0x80); // neutral light angle
 
     // ── Row 2: Layout Skeleton ─────────────────────────────────────────
-    m.set(Field.UILayoutSpec, post.layout & 0x0f);
-    m.set(Field.ElemDensity,  Math.min(post.mediaCount, 15));
-    m.set(Field.MediaType,    post.mediaType & 0x0f);
+    m.set(Field.UILayoutSpec, post.layout);
+    m.set(Field.ElemDensity,  post.mediaCount);
+    m.set(Field.MediaType,    post.mediaType);
     m.set(Field.TextLength,   TasteEncoder.logScale(post.text.length, 1000));
 
     // ── Row 3: State & Versioning ──────────────────────────────────────
@@ -83,12 +94,47 @@ export class TasteEncoder {
 
     // Versioning: Byte 14 is reserved, Byte 15 is Protocol Version.
     m.set(Field.Reserved14, 0x00);
-    m.set(Field.ProtocolVersion, 0x01);
+    m.set(Field.ProtocolVersion, PROTOCOL_VERSION);
 
     return m;
   }
 
   // ── Private helpers ──────────────────────────────────────────────────
+
+  private static assertPost(post: RawPostData): void {
+    if (!post || typeof post !== 'object') {
+      throw new TypeError('Post data must be an object');
+    }
+    if (typeof post.postId !== 'string' || post.postId.length === 0) {
+      throw new TypeError('postId must be a non-empty string');
+    }
+    if (typeof post.text !== 'string') {
+      throw new TypeError('text must be a string');
+    }
+
+    TasteEncoder.assertInteger('mediaCount', post.mediaCount, 0, 15);
+    TasteEncoder.assertInteger('mediaType', post.mediaType, 0, 4);
+    TasteEncoder.assertInteger('engagement', post.engagement, 0, Number.MAX_SAFE_INTEGER);
+    TasteEncoder.assertInteger('layout', post.layout, 0, 3);
+
+    if (!Number.isFinite(post.emotionScore) || post.emotionScore < 0 || post.emotionScore > 1) {
+      throw new RangeError('emotionScore must be between 0 and 1');
+    }
+    if (!post.socialState || typeof post.socialState !== 'object') {
+      throw new TypeError('socialState must be an object');
+    }
+    for (const key of SOCIAL_STATE_KEYS) {
+      if (typeof post.socialState[key] !== 'boolean') {
+        throw new TypeError(`socialState.${key} must be a boolean`);
+      }
+    }
+  }
+
+  private static assertInteger(name: string, value: number, min: number, max: number): void {
+    if (!Number.isSafeInteger(value) || value < min || value > max) {
+      throw new RangeError(`${name} must be an integer between ${min} and ${max}`);
+    }
+  }
 
   /**
    * A fast, non-cryptographic 32-bit hash for deterministic color generation.
