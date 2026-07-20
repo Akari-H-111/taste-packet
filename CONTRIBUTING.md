@@ -23,5 +23,5 @@ This project follows a strict architectural philosophy:
 ## Pull Request Process
 
 1. Update the README.md with details of changes to the protocol, if applicable.
-2. Keep PRs small and atomic. "He says nothing. He writes one line. It works."
+2. Keep PRs small and atomic. "The shape arrives first. The story follows."
 3. Your PR will automatically be tested by our GitHub Actions CI pipeline.

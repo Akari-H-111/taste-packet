@@ -4,8 +4,7 @@
 [![npm](https://img.shields.io/npm/v/xtaste-client-sdk.svg)](https://www.npmjs.com/package/xtaste-client-sdk)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-> *"He says nothing. He writes one line. It works."*
-> *Inspired by [Ponytail](https://github.com/DietrichGebert/ponytail).*
+> *"The shape arrives first. The story follows."*
 
 Project .taste is a zero-runtime-dependency TypeScript SDK for sending a fixed
 16-byte preview of a social post before the full content arrives. It gives a
