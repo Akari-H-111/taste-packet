@@ -10,6 +10,13 @@ dist/
 build/
 *.tsbuildinfo
 
+# The SDK ships its compiled output so the static browser demo works without a build step.
+!xtaste-client-sdk/dist/
+!xtaste-client-sdk/dist/**
+
+# Local package archives
+*.tgz
+
 # misc
 .DS_Store
 .env

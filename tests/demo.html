@@ -26,7 +26,7 @@
         }
         .tweet-skeleton {
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 8px;
             padding: 16px;
             margin-bottom: 16px;
             position: relative;
@@ -78,20 +78,16 @@
     </style>
 </head>
 <body>
-    <div id="stats">X-Taste Hydrating...</div>
-    <div id="timeline"></div>
+    <main>
+        <h1>Project .taste</h1>
+        <p>Hydrate a stable social timeline preview from fixed 16-byte packets.</p>
+        <div id="stats" aria-live="polite">X-Taste Hydrating...</div>
+        <div id="timeline"></div>
+    </main>
 
-    <!-- Compile the SDK locally in the browser for demo purposes -->
+    <!-- Load the checked-in SDK build so this demo needs no bundler. -->
     <script type="module">
-        // Since we are in a simple HTML file without a bundler, we will mock the Decoder locally 
-        // to show exactly how it works with the Bitmask and Colors, simulating what happens after 
-        // receiving the 16-byte payload.
-        
-        // Mock of InteractionBitmask
-        const Mask = {
-            LIKED: 0x01, REPOSTED: 0x02, COMMENTED: 0x04, BOOKMARKED: 0x08,
-            CLOSE_FRIEND: 0x10, FOLLOWING: 0x20, MUTED: 0x40, BLOCKED: 0x80,
-        };
+        import { TasteDecoder, TasteEncoder } from '../xtaste-client-sdk/dist/index.js';
 
         // A tiny 16-color shared palette simulating what the client has cached
         const PALETTE = [
@@ -99,41 +95,39 @@
             '#1DA1F2', '#14171A', '#657786', '#AAB8C2', '#E1E8ED', '#F5F8FA', '#FFFFFF', '#000000'
         ];
 
-        // Simulate receiving 10 binary packets (16 bytes each) from the adapter
-        function generateFakeTastePackets() {
-            const packets = [];
-            for(let i=0; i<10; i++) {
-                const buf = new Uint8Array(16);
-                // Row 0: Visuals (0-15 indices)
-                buf[0] = Math.floor(Math.random() * 16);
-                buf[1] = Math.floor(Math.random() * 16);
-                buf[2] = Math.floor(Math.random() * 16);
-                buf[3] = Math.floor(Math.random() * 16);
-                // Row 2: Text Length & Media Height
-                buf[8] = Math.floor(Math.random() * 3); // 0, 1, 2 layout
-                buf[11] = Math.floor(Math.random() * 200) + 50; // text length
-                // Row 3: Interaction
-                buf[13] = Math.random() > 0.5 ? Mask.LIKED : 0x00; 
-                packets.push(buf);
-            }
-            return packets;
-        }
+        const posts = Array.from({ length: 10 }, (_, index) => ({
+            postId: `demo-${index + 1}`,
+            text: `A compact preview keeps post ${index + 1} stable while full content loads.`,
+            mediaCount: index % 3 === 0 ? 1 : 0,
+            mediaType: index % 3 === 0 ? 1 : 0,
+            engagement: index * 1200,
+            emotionScore: (index + 2) / 12,
+            socialState: {
+                liked: index % 2 === 0,
+                reposted: index % 3 === 0,
+                commented: false,
+                bookmarked: index % 4 === 0,
+                closeFriend: index === 0,
+                following: true,
+                muted: false,
+                blocked: false
+            },
+            layout: index % 3 === 0 ? 1 : 0
+        }));
 
-        const packets = generateFakeTastePackets();
+        const packets = posts.map((post) => TasteEncoder.encode(post));
         const timeline = document.getElementById('timeline');
         
         const startTime = performance.now();
 
-        packets.forEach(buf => {
-            // Hydration (0-CPU cost mapping)
-            const colorA = PALETTE[buf[0]];
-            const colorB = PALETTE[buf[1]];
-            const colorC = PALETTE[buf[2]];
-            const colorD = PALETTE[buf[3]];
-            
-            const isLiked = (buf[13] & Mask.LIKED) !== 0;
-            const textLines = Math.max(1, Math.floor(buf[11] / 60)); // Simulate lines based on byte 11
-            const mediaHeight = buf[8] === 0 ? '0px' : (buf[8] === 1 ? '250px' : '400px');
+        packets.forEach(matrix => {
+            const preview = TasteDecoder.decode(matrix.buf);
+            const [colorA, colorB, colorC, colorD] = preview.visual.vertexColors.map(
+                (index) => PALETTE[index % PALETTE.length]
+            );
+            const isLiked = preview.state.social.liked;
+            const textLines = Math.max(1, Math.ceil(preview.layout.textLength / 80));
+            const mediaHeight = preview.layout.mediaType === 0 ? '0px' : '250px';
 
             // Build DOM
             const el = document.createElement('div');
@@ -170,11 +164,12 @@
             `;
 
             el.innerHTML = html;
+            el.setAttribute('aria-label', `16-byte preview, ${matrix.buf.byteLength} bytes`);
             timeline.appendChild(el);
         });
 
         const endTime = performance.now();
-        document.getElementById('stats').innerText = `10 Previews Hydrated in ${(endTime - startTime).toFixed(2)} ms`;
+        document.getElementById('stats').innerText = `10 previews hydrated from 160 bytes in ${(endTime - startTime).toFixed(2)} ms`;
     </script>
 </body>
 </html>

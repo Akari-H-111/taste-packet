@@ -14,10 +14,10 @@ This project follows a strict architectural philosophy:
 1. Fork the repo and create your branch from `main`.
 2. Run the tests to ensure your baseline is clean:
    ```bash
-   npm run build
+   npm run setup
    npm test
    ```
-3. If you've added code that should be tested, update `tests/e2e_integration_test.py`.
+3. If you've added code that should be tested, update `tests/e2e_integration_test.js`.
 4. Ensure the test suite passes.
 
 ## Pull Request Process

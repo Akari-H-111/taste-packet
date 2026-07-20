@@ -1,81 +1,77 @@
-# Project .taste (v1.0.0)
+# Project .taste
 
 [![CI Build](https://github.com/Akari-H-111/taste-packet/actions/workflows/ci.yml/badge.svg)](https://github.com/Akari-H-111/taste-packet/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 > *"He says nothing. He writes one line. It works."*
-> *— Inspired by [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail)*
----
+> *Inspired by [Ponytail](https://github.com/DietrichGebert/ponytail).*
 
-## 🐎 A Minimalist's Greeting
+Project .taste is a zero-runtime-dependency TypeScript SDK for sending a fixed
+16-byte preview of a social post before the full content arrives. It gives a
+client enough information to reserve layout, paint a visual palette, and show
+interaction state without shipping a large JSON payload first.
 
-Greetings, fellow travelers.
+**Track:** Developer Tools
 
-If you have stumbled upon this quiet corner of the digital world, you are most welcome. 
+## Try it in 60 seconds
 
-We observe with a quiet heart how modern systems handle data. When a hundred thousand souls simultaneously ask to see what is happening in the world, modern servers reply by throwing massive bundles of heavy JSON text across the airwaves. The network stumbles, packets are lost, and devices stutter.
+Requirements: Node.js 20 or newer.
 
-`Project .taste` is our humble attempt to offer a remedy. It is not a loud, flashy invention. It is merely a return to a gentler engineering tradition: **the Unix philosophy of doing one small thing, and doing it with absolute devotion.**
+```bash
+git clone https://github.com/Akari-H-111/taste-packet.git
+cd taste-packet
+npm run setup
+npm test
+npm run benchmark
+```
 
-We have compressed the chaotic, high-dimensional reality of a social timeline down into a tight, immovable **16-byte (128-bit) 4x4 Semantic Matrix**. We store it cold, we carry it lightly, and we let the client expand it gracefully. Zero WebAssembly. Zero Web Workers. Zero dependencies. Just pure, JIT-optimized bitwise operations.
+The checked-in browser demo is available at
+[`tests/demo.html`](tests/demo.html), with a hosted copy at
+<https://akari-h-111.github.io/taste-packet/tests/demo.html>. To run it locally
+with the real SDK module:
 
-<p align="center">
-  <img src="assets/demo.gif" width="600" alt="16-byte X-Taste visual hydration demo">
-  <br>
-  <em>10 posts hydrating instantly from 160 bytes. Zero layout shifts. Rendered via native GPU CSS gradients.</em>
-</p>
+```bash
+npm run build
+python3 -m http.server 4173
+```
 
----
+Then open <http://localhost:4173/tests/demo.html>. The compiled SDK output is
+checked in intentionally so the demo can also run from a static GitHub Pages
+deployment without rebuilding the repository.
 
-## 📐 1. Architectural Architecture: The 4x4 Matrix Topology
+## What the packet contains
 
-A `.taste` packet refuses to grow or shrink; it is always exactly 16 bytes.
+Every packet is exactly 16 bytes, arranged as a 4x4 semantic matrix:
 
 ```text
-               Column 0        Column 1        Column 2        Column 3
+               Byte 0          Byte 1          Byte 2          Byte 3
            +---------------+---------------+---------------+---------------+
-  Row 0    |  VertexColorA |  VertexColorB |  VertexColorC |  VertexColorD |  -> Visual Ambiance
+  Row 0    |  VertexColorA |  VertexColorB |  VertexColorC |  VertexColorD |
            +---------------+---------------+---------------+---------------+
-  Row 1    |  EmotionBase  |  AnimVelocity |  GrainTexture |  LightField   |  -> Motion Dynamics
+  Row 1    |  EmotionBase  |  AnimVelocity |  GrainTexture |  LightField   |
            +---------------+---------------+---------------+---------------+
-  Row 2    |  UILayoutSpec |  ElemDensity  |  MediaType    |  TextLength   |  -> Layout Skeleton
+  Row 2    |  UILayoutSpec |  ElemDensity  |  MediaType     |  TextLength   |
            +---------------+---------------+---------------+---------------+
-  Row 3    |  HotBucket    |  Interaction  |  Reserved14   |ProtocolVersion|  -> State & Versioning
+  Row 3    |  HotBucket    |  Interaction  |  Reserved14    |  ProtocolVer. |
            +---------------+---------------+---------------+---------------+
 ```
 
-### 1.1 Pure Separation of Duties
-*   **Row 0 (Visual Ambiance)**: Four numbers representing color palette indices.
-*   **Row 1 (Motion Dynamics)**: Controls how the background flows and breathes.
-*   **Row 2 (Layout Skeleton)**: Predefines the geometry of the text and media slots.
-*   **Row 3 (State & Versioning)**: Holds the social interaction switches (Likes, Reposts), a reserved byte (`Reserved14`) for future expansion, and a strict `ProtocolVersion` (`Byte 15`) header.
+The packet is a preview contract, not a replacement for content. The
+application can fetch localized text, images, and other full-fidelity data in
+the background after the client has reserved the correct geometry.
 
----
+## Usage
 
-## 🛡️ 2. Minimalist Transport Philosophy
+The SDK source lives in `xtaste-client-sdk/` and has no runtime dependencies.
+After `npm run setup` and `npm run build`, import it from a Node.js or edge
+application like this:
 
-In `.taste`, we reject the over-engineering of application-layer Forward Error Correction (FEC). Rather than manually writing cross-XOR bitwise recovery algorithms to fight packet loss, we adhere to a strictly layered architecture:
-
-We deliver the 16 bytes via HTTP/3 (QUIC) response headers or WebSockets, delegating all error-recovery, checksumming, and retransmission to the transport layer. If a packet drops, QUIC handles it. If the protocol needs to evolve, the **ProtocolVersion** (Byte 15) handles it.
-
-This zero-redundancy design keeps the SDK unbelievably fast, synchronously hydrating the user interface in ~1 millisecond.
-
----
-
-## 📦 3. Installation & Usage
-
-Install the core SDK via npm:
-```bash
-npm install xtaste-client-sdk
-```
-
-### Encoding (Server-side/Edge)
 ```typescript
-import { TasteEncoder } from 'xtaste-client-sdk';
+import { TasteEncoder, TasteDecoder } from './xtaste-client-sdk/dist/index.js';
 
-const matrix = TasteEncoder.encode({
-  postId: "1829384756",
-  text: "Drinking coffee in Tokyo 🌸☕",
+const packet = TasteEncoder.encode({
+  postId: '1829384756',
+  text: 'Drinking coffee in Tokyo.',
   mediaCount: 1,
   mediaType: 1,
   engagement: 12000,
@@ -93,72 +89,93 @@ const matrix = TasteEncoder.encode({
   layout: 1
 });
 
-// Emit these 16 bytes over QUIC Datagrams or HTTP Headers
-const payload = matrix.buf; 
-```
-
-### Decoding (Client-side UI)
-```typescript
-import { TasteDecoder } from 'xtaste-client-sdk';
-
-// Rehydrate instantly upon receiving the 16 bytes
-const preview = TasteDecoder.decode(payload);
-
+const preview = TasteDecoder.decode(packet.buf);
+console.log(packet.buf.byteLength); // 16
 console.log(preview.state.social.liked); // true
-console.log(preview.layout.textLength);  // Extrapolated line count
 ```
 
----
+`TasteEncoder` is the server or edge projection step. `TasteDecoder` is the
+client hydration step. The transport remains responsible for delivery,
+retransmission, and ordering; the protocol only defines the compact preview.
 
-## 🛠️ 4. Local Development & Benchmarks
+## Verification
 
-We provide a pure TypeScript SDK and a small Node.js audit. No runtime dependencies required.
+`npm test` builds the SDK and runs an end-to-end encoder/decoder round trip. It
+also checks the fixed packet size, protocol version, social bitmask, and an
+invalid-length packet.
 
-### Run the SDK E2E Audit
-```bash
-npm test
-```
-*Builds the SDK, then proves the encoder and decoder round-trip one real 16-byte packet.*
+`npm run benchmark` uses a deterministic Twitter v2-shaped fixture with 100
+posts. It measures the byte size of the fixture against 100 encoded packets:
 
-**Audit Output Snapshot:**
-```text
-E2E passed: SDK encodes and decodes one 16-byte .taste packet.
-```
-
-### Run the Performance Benchmark (Node.js)
-```bash
-npm run benchmark
-```
-*Simulates projecting a heavy Twitter API v2 payload into the 16-byte .taste matrix, proving the 96%+ bandwidth savings and sub-millisecond execution time.*
-
-**Benchmark Snapshot:**
 ```text
 [Baseline] 100 Twitter v2 JSON payload size: 46.72 KB (47842 Bytes)
 [X-Taste] 100 .taste packets total size: 1.56 KB (1600 Bytes)
 Bandwidth Savings: 96.66%
 ```
 
----
+This is a reproducible local fixture, not a claim about every production
+timeline or network. The benchmark also reports the synchronous projection
+time on the machine that runs it.
 
-## 🏢 5. FAQ: The Enterprise Architect's Dilemma
+## Supported platforms
 
-When we share this with young architects, they often present three valid concerns. We answer them here:
+- Node.js 20+ for the SDK build, tests, and benchmark.
+- Modern browsers for the static demo and browser-side decoder.
+- macOS, Linux, and Windows environments with Node.js installed.
 
-**Q: If you only send 16 bytes for the skeleton, how do users see the real text and images?**
-A: `.taste` is not a replacement for content; it is a **decoupling of preview and content**. By delivering the 16-byte matrix instantly, the client locks the layout geometry, paints the ambient color (derived from the actual image), and sets the interaction state in 0.1 seconds. The heavy JSON containing localized text and 4K images is then lazy-loaded asynchronously in the background. The user perceives an instant load, and layout shift (CLS) is entirely eliminated.
+## OpenAI Build Week submission
 
-**Q: Our backend uses GraphQL/gRPC. Doesn't this require massive database migrations?**
-A: Not at all. `.taste` is an **unintrusive side-car**. You do not change your database schemas. You simply place our 0-dependency `TasteEncoder` in your API Gateway or Edge Worker (e.g., Cloudflare Workers). It intercepts the heavy outgoing payload, crushes it into the 16-byte matrix on the fly, and fires it down to the client.
+### Project description
 
-**Q: How does this scale as our application grows and adds new features?**
-A: We have explicitly reserved Byte 14 for imminent layout flags and allocated Byte 15 as the `ProtocolVersion`. This ensures that even if we bump to a 32-byte or dynamically-sized protocol in the future, older legacy clients will gracefully fall back or drop the packet upon seeing an unsupported version.
+Project .taste is a developer tool for progressive social timeline rendering.
+It turns rich post metadata into a deterministic 16-byte preview packet, then
+turns that packet back into layout, visual, motion, and social state on the
+client. The full content remains independently fetchable, so teams can add the
+protocol beside an existing REST, GraphQL, gRPC, or edge API.
 
----
+### How Codex and GPT-5.6 were used
 
-## 🤝 6. An Invitation to Collaborate
+Codex with GPT-5.6 was used to inspect the repository, simplify the protocol
+implementation, remove speculative runtime layers, build the TypeScript SDK,
+write the encoder/decoder round-trip test, create the deterministic benchmark,
+and prepare the CI and browser demo. The key workflow decision was to keep the
+protocol synchronous and dependency-free, and to verify the real exported SDK
+instead of maintaining a second test-only implementation.
 
-We do not seek fame or fortune for this project; we only wish to leave the internet a slightly lighter, more peaceful place than we found it.
+### Judge path
 
-Please feel free to open an Issue or submit a Pull Request. 
+1. Open [`tests/demo.html`](tests/demo.html) for the visual hydration demo.
+2. Run `npm run setup && npm test` to verify the SDK round trip.
+3. Run `npm run benchmark` to reproduce the size comparison.
+4. Read `xtaste-client-sdk/src/` for the protocol implementation and
+   `tests/` for the executable checks.
 
-*“Let us dry the heavy waters of the web, and let the small devices blossom on the edge.”*
+The Devpost submission should include the `/feedback` Codex Session ID for the
+session where the core functionality was built. That identifier is intentionally
+entered in Devpost rather than committed to this repository.
+
+## FAQ
+
+**Does 16 bytes contain the real text and images?**
+
+No. It contains the information needed to render a stable preview. The full
+content can load asynchronously after the layout is reserved.
+
+**Does this require a database migration?**
+
+No. The encoder can run as a sidecar in an API gateway or edge function. It
+accepts application data and emits the preview packet without changing storage.
+
+**How does versioning work?**
+
+Byte 14 is reserved and byte 15 contains the protocol version. Clients can
+inspect the version before interpreting a packet, while the full content path
+remains available as a fallback.
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the small development workflow.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).

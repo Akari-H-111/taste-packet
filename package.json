@@ -1,12 +1,10 @@
 {
   "name": "taste-packet",
   "version": "1.0.0",
-  "description": "> *\"He says nothing. He writes one line. It works.\"*",
-  "main": "index.js",
-  "directories": {
-    "test": "tests"
-  },
+  "description": "A 16-byte semantic matrix protocol for instant social timeline previews.",
+  "private": true,
   "scripts": {
+    "setup": "npm ci --prefix xtaste-client-sdk",
     "dev": "npm run dev --prefix xtaste-client-sdk",
     "test": "npm run build && node tests/e2e_integration_test.js",
     "benchmark": "npm run build && node tests/simulate_twitter_api.js",
