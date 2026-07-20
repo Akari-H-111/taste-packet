@@ -18,13 +18,16 @@ while text and media continue loading through the application's existing API.
   </a>
 </p>
 
-**[Open the live demo](https://akari-h-111.github.io/taste-packet/tests/demo.html)** ·
-**[Install from npm](https://www.npmjs.com/package/xtaste-client-sdk)** ·
-**[Read protocol v1](PROTOCOL.md)**
+**[Open the live demo](https://akari-h-111.github.io/taste-packet/tests/demo.html)**
+
+[Install from npm](https://www.npmjs.com/package/xtaste-client-sdk) ·
+[Read protocol v1](PROTOCOL.md) ·
+[View the Devpost submission](https://devpost.com/software/project-taste)
 
 - Exactly 16 bytes per preview packet.
 - Zero runtime dependencies and no framework requirement.
-- 96.70% smaller than the repository's deterministic 100-post JSON fixture.
+- Deterministic 100-post fixture: 47.40 KB JSON -> 1.56 KB preview packets
+  (96.70% fewer bytes before full content arrives).
 
 ## Install
 
@@ -137,7 +140,8 @@ Open <http://localhost:4173/tests/demo.html>.
 ## OpenAI Build Week
 
 Project .taste was submitted to the Developer Tools track of OpenAI Build
-Week. [Watch the 2:56 demo](https://www.youtube.com/watch?v=vQBAJQhKELE).
+Week. [View the Devpost submission](https://devpost.com/software/project-taste)
+or [watch the 2:56 demo](https://www.youtube.com/watch?v=vQBAJQhKELE).
 
 ### How Codex and GPT-5.6 were used
 
@@ -169,9 +173,12 @@ Byte 14 is reserved and byte 15 stores the protocol version. The v1 decoder
 rejects unknown versions so the application can fall back to its full-content
 path instead of interpreting incompatible bytes.
 
-## Contributing
+## Feedback and contributions
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the development workflow.
+Have a timeline shape that the v1 packet cannot express?
+[Open an issue](https://github.com/Akari-H-111/taste-packet/issues/new).
+For code changes, see [`CONTRIBUTING.md`](CONTRIBUTING.md). If the protocol is
+useful, a star helps other performance-minded developers find it.
 
 ## License
 

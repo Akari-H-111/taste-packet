@@ -1,27 +1,28 @@
-# Contributing to .taste
+# Contributing to Project .taste
 
-First off, thank you for considering contributing to Project .taste. It's people like you that make the open-source community such a great place to learn, inspire, and create.
+Open an issue before changing the protocol contract. Small fixes can go
+straight to a pull request.
 
-## The Minimalist Mandate
+## Constraints
 
-This project follows a strict architectural philosophy:
-- **Zero Dependencies**: Do not introduce third-party libraries.
-- **Fixed Size**: The protocol is 16-bytes. It does not grow.
-- **JIT & Synchronous**: No Web Workers, WebAssembly, or async overhead in the SDK core.
+- The protocol stays exactly 16 bytes.
+- The SDK core stays synchronous and has zero runtime dependencies.
+- Protocol changes include documentation and a test vector.
 
 ## Development Workflow
 
-1. Fork the repo and create your branch from `main`.
-2. Run the tests to ensure your baseline is clean:
+1. Fork the repository and create a branch from `main`.
+2. Install and verify the current baseline:
+
    ```bash
    npm run setup
    npm test
    ```
-3. If you've added code that should be tested, update `tests/e2e_integration_test.js`.
-4. Ensure the test suite passes.
+3. Add the smallest test that proves the change.
+4. Run `npm test` again before opening the pull request.
 
 ## Pull Request Process
 
-1. Update the README.md with details of changes to the protocol, if applicable.
-2. Keep PRs small and atomic. "The shape arrives first. The story follows."
-3. Your PR will automatically be tested by our GitHub Actions CI pipeline.
+1. Keep the pull request small and explain the behavior it changes.
+2. Update `README.md` or `PROTOCOL.md` when the public contract changes.
+3. Let GitHub Actions finish successfully before requesting review.
