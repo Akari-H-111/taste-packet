@@ -167,7 +167,7 @@
         .preview { opacity: 1; }
         .story { opacity: 0; pointer-events: none; }
         .hydrated .preview { opacity: 0; pointer-events: none; }
-        .hydrated .story { opacity: 1; }
+        .hydrated .story { opacity: 1; pointer-events: auto; }
 
         .post-header {
             display: grid;
@@ -463,7 +463,7 @@
             <div class="metrics">
                 <div class="metric"><strong>16 B</strong><span>fixed packet</span></div>
                 <div class="metric"><strong>v1</strong><span>protocol</span></div>
-                <div class="metric"><strong id="cls-value">0.000</strong><span>observed CLS</span></div>
+                <div class="metric"><strong id="cls-value">0.000</strong><span>hydration CLS</span></div>
             </div>
             <p id="hex-line" class="hex-line"></p>
         </aside>
@@ -478,7 +478,6 @@
         import {
             Field,
             TasteDecoder,
-            TasteEncoder,
         } from '../xtaste-client-sdk/dist/index.js';
 
         const PALETTE = [
@@ -507,65 +506,38 @@
             ['ProtocolVersion', 'Packet schema version; v1 is supported.'],
         ];
 
-        const baseSocialState = {
-            liked: false,
-            reposted: false,
-            commented: false,
-            bookmarked: false,
-            closeFriend: false,
-            following: true,
-            muted: false,
-            blocked: false,
-        };
-
-        const names = ['Mina', 'Jon Bell', 'Rae', 'Noah', 'Iris', 'Sam', 'Avery', 'Nico', 'June', 'Kai'];
-        const handles = ['@mina', '@jonb', '@rae', '@noah', '@iris', '@sam', '@avery', '@nico', '@june', '@kai'];
-        const copy = [
-            'Sixteen glass cells, one stable preview. The full image arrived without moving the frame.',
-            'A compact contract lets the client reserve the right geometry before the API finishes.',
-            'The preview packet is not the story. It simply gives the story a place to land.',
-            'Fixed-size data makes the first render deterministic and easy to test.',
-            'Existing REST and GraphQL paths keep carrying the full content independently.',
-            'A protocol earns trust when its limits are as explicit as its benchmark.',
-            'One interaction byte carries eight viewer-specific boolean states.',
-            'Protocol version lives in the packet, so incompatible clients can fall back safely.',
-            'The SDK stays synchronous and has no runtime dependencies.',
-            'Ten previews need 160 bytes before their full content arrives.',
+        const RAW_PACKETS = [
+            [8, 50, 132, 248, 43, 16, 48, 128, 1, 1, 1, 166, 0, 59, 0, 1],
+            [9, 50, 132, 248, 64, 128, 48, 128, 0, 0, 0, 165, 7, 32, 0, 1],
+            [10, 50, 132, 248, 85, 128, 48, 128, 0, 0, 0, 162, 7, 33, 0, 1],
+            [11, 50, 132, 248, 106, 128, 48, 128, 0, 0, 0, 157, 7, 34, 0, 1],
+            [12, 50, 132, 248, 128, 128, 48, 128, 0, 0, 0, 161, 7, 41, 0, 1],
+            [13, 50, 132, 248, 149, 128, 48, 128, 0, 0, 0, 158, 7, 32, 0, 1],
+            [14, 50, 132, 248, 170, 128, 48, 128, 0, 0, 0, 155, 7, 35, 0, 1],
+            [15, 50, 132, 248, 191, 128, 48, 128, 0, 0, 0, 164, 7, 32, 0, 1],
+            [16, 50, 132, 248, 213, 128, 48, 128, 0, 0, 0, 151, 7, 41, 0, 1],
+            [56, 115, 10, 9, 234, 128, 48, 128, 0, 0, 0, 153, 9, 34, 0, 1],
         ];
 
-        const posts = Array.from({ length: 10 }, (_, index) => ({
-            postId: `demo-${index + 1}`,
-            text: copy[index],
-            mediaCount: index === 0 ? 1 : 0,
-            mediaType: index === 0 ? 1 : 0,
-            engagement: index * 1200,
-            emotionScore: (index + 2) / 12,
-            socialState: {
-                ...baseSocialState,
-                liked: index % 2 === 0,
-                reposted: index % 3 === 0,
-                bookmarked: index % 4 === 0,
-                closeFriend: index === 0,
-            },
-            layout: index === 0 ? 1 : 0,
-        }));
-
-        const packets = posts.map((post) => TasteEncoder.encode(post));
-        const previews = packets.map((packet) => TasteDecoder.decode(packet.buf));
+        const packets = RAW_PACKETS.map((bytes) => new Uint8Array(bytes));
+        const previews = packets.map((packet) => TasteDecoder.decode(packet));
         const timeline = document.getElementById('timeline');
         const phase = document.getElementById('phase');
         const clsValue = document.getElementById('cls-value');
         let selectedPacket = 0;
-        let hydrationTimer;
-        let cumulativeLayoutShift = 0;
+        let replayToken = 0;
+        let hydrationStartedAt = Number.POSITIVE_INFINITY;
+        let hydrationLayoutShift = 0;
 
         if ('PerformanceObserver' in window) {
             try {
                 const observer = new PerformanceObserver((list) => {
                     for (const entry of list.getEntries()) {
-                        if (!entry.hadRecentInput) cumulativeLayoutShift += entry.value;
+                        if (!entry.hadRecentInput && entry.startTime >= hydrationStartedAt) {
+                            hydrationLayoutShift += entry.value;
+                        }
                     }
-                    clsValue.textContent = cumulativeLayoutShift.toFixed(3);
+                    clsValue.textContent = hydrationLayoutShift.toFixed(3);
                 });
                 observer.observe({ type: 'layout-shift', buffered: true });
             } catch {
@@ -579,13 +551,16 @@
             return preview.visual.vertexColors.map((value) => PALETTE[value % PALETTE.length]);
         }
 
-        function postMarkup(post, preview, index) {
+        function skeletonLines(textLength) {
+            const count = Math.max(1, Math.min(3, Math.ceil(textLength / 85)));
+            return Array.from({ length: count }, (_, index) =>
+                `<div class="line ${index === count - 1 ? 'medium' : ''}"></div>`
+            ).join('');
+        }
+
+        function previewMarkup(preview) {
             const colors = paletteFor(preview);
             const hasMedia = preview.layout.mediaType !== 0;
-            const image = index === 0
-                ? '<img src="../assets/demo-media.jpg" width="1200" height="800" alt="A glass 4 by 4 matrix on a daylight workspace">'
-                : '';
-            const initials = names[index].split(' ').map((part) => part[0]).join('');
 
             return `
                 <div class="post-stack" style="--color-a:${colors[0]};--color-b:${colors[1]};--color-c:${colors[2]};--color-d:${colors[3]};--avatar-color:${colors[0]}">
@@ -594,26 +569,37 @@
                             <div class="avatar-skeleton"></div>
                             <div class="identity-skeleton"><div class="line medium"></div><div class="line short"></div></div>
                         </div>
-                        <div class="text-block"><div class="line"></div><div class="line"></div><div class="line medium"></div></div>
+                        <div class="text-block">${skeletonLines(preview.layout.textLength)}</div>
                         <div class="media-frame ${hasMedia ? '' : 'no-media'}"></div>
                         <div class="actions"><i class="action-skeleton"></i><i class="action-skeleton"></i><i class="action-skeleton"></i><i class="action-skeleton"></i></div>
                     </div>
-                    <div class="story">
-                        <div class="post-header">
-                            <div class="avatar">${initials}</div>
-                            <div class="identity"><strong>${names[index]}</strong><span>${handles[index]} · ${index + 1}m</span></div>
-                        </div>
-                        <p class="post-copy">${post.text}</p>
-                        <div class="media-frame ${hasMedia ? '' : 'no-media'}">${image}</div>
-                        <div class="actions"><span>Reply</span><span>Repost ${index * 3}</span><span class="${post.socialState.liked ? 'liked' : ''}">Like ${index * 11 + 1}</span><span>Save</span></div>
+                </div>
+            `;
+        }
+
+        function storyMarkup(content, preview, index) {
+            const hasMedia = preview.layout.mediaType !== 0;
+            const image = hasMedia
+                ? '<img src="../assets/demo-media.jpg" width="1200" height="800" alt="A glass 4 by 4 matrix on a daylight workspace">'
+                : '';
+            const initials = content.name.split(' ').map((part) => part[0]).join('');
+
+            return `
+                <div class="story">
+                    <div class="post-header">
+                        <div class="avatar">${initials}</div>
+                        <div class="identity"><strong>${content.name}</strong><span>${content.handle} · ${index + 1}m</span></div>
                     </div>
+                    <p class="post-copy">${content.text}</p>
+                    <div class="media-frame ${hasMedia ? '' : 'no-media'}">${image}</div>
+                    <div class="actions"><span>Reply</span><span>Repost ${index * 3}</span><span class="${preview.state.social.liked ? 'liked' : ''}">Like ${index * 11 + 1}</span><span>Save</span></div>
                 </div>
             `;
         }
 
         function renderTimeline() {
             timeline.innerHTML = '';
-            posts.forEach((post, index) => {
+            previews.forEach((preview, index) => {
                 const card = document.createElement('article');
                 card.className = 'post';
                 card.tabIndex = 0;
@@ -621,7 +607,7 @@
                 card.dataset.index = String(index);
                 card.setAttribute('aria-label', `Inspect preview packet ${index + 1}`);
                 card.setAttribute('aria-current', index === selectedPacket ? 'true' : 'false');
-                card.innerHTML = postMarkup(post, previews[index], index);
+                card.innerHTML = previewMarkup(preview);
                 card.addEventListener('click', () => selectPacket(index));
                 card.addEventListener('keydown', (event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -634,7 +620,7 @@
         }
 
         function renderInspector(packetIndex, fieldIndex = 0) {
-            const bytes = packets[packetIndex].buf;
+            const bytes = packets[packetIndex];
             document.getElementById('packet-number').textContent = `Packet ${String(packetIndex + 1).padStart(2, '0')}`;
             document.getElementById('hex-line').textContent = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(' ');
 
@@ -666,17 +652,40 @@
             renderInspector(index);
         }
 
-        function replay() {
-            clearTimeout(hydrationTimer);
-            document.querySelectorAll('.post').forEach((card) => card.classList.remove('hydrated'));
+        async function replay() {
+            const token = ++replayToken;
+            hydrationLayoutShift = 0;
+            hydrationStartedAt = performance.now();
+            clsValue.textContent = '0.000';
             phase.textContent = 'Preview packets';
-            hydrationTimer = setTimeout(() => {
-                document.querySelectorAll('.post').forEach((card) => card.classList.add('hydrated'));
-                phase.textContent = 'Full content';
-                requestAnimationFrame(() => {
-                    clsValue.textContent = cumulativeLayoutShift.toFixed(3);
+            renderTimeline();
+
+            try {
+                const [content] = await Promise.all([
+                    fetch('./demo-content.json', { cache: 'no-store' }).then((response) => {
+                        if (!response.ok) throw new Error(`Content request failed: ${response.status}`);
+                        return response.json();
+                    }),
+                    new Promise((resolve) => setTimeout(resolve, 1400)),
+                ]);
+                if (token !== replayToken) return;
+                if (!Array.isArray(content) || content.length !== previews.length) {
+                    throw new Error('Content response does not match the preview packet count');
+                }
+
+                document.querySelectorAll('.post-stack').forEach((stack, index) => {
+                    stack.insertAdjacentHTML('beforeend', storyMarkup(content[index], previews[index], index));
                 });
-            }, 1400);
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    if (token !== replayToken) return;
+                    document.querySelectorAll('.post').forEach((card) => card.classList.add('hydrated'));
+                    phase.textContent = 'Full content';
+                }));
+            } catch (error) {
+                if (token !== replayToken) return;
+                phase.textContent = 'Content unavailable';
+                console.error(error);
+            }
         }
 
         document.getElementById('replay').addEventListener('click', replay);

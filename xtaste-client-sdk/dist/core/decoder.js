@@ -12,19 +12,20 @@ import { InteractionBitmask } from './bitmask.js';
 export class TasteDecoder {
     /** Return whether a buffer is a supported .taste packet. */
     static supports(raw) {
-        return raw.length === PACKET_BYTES && raw[Field.ProtocolVersion] === PROTOCOL_VERSION;
+        try {
+            TasteDecoder.validate(raw);
+            return true;
+        }
+        catch {
+            return false;
+        }
     }
     /**
      * Decode a 16-byte buffer into a structured preview card.
      */
     static decode(raw) {
-        if (raw.length !== PACKET_BYTES) {
-            throw new RangeError(`Expected ${PACKET_BYTES} bytes, got ${raw.length}`);
-        }
+        TasteDecoder.validate(raw);
         const protocolVersion = raw[Field.ProtocolVersion];
-        if (protocolVersion !== PROTOCOL_VERSION) {
-            throw new RangeError(`Unsupported protocol version ${protocolVersion}`);
-        }
         const m = new TasteMatrix(raw);
         return {
             visual: {
@@ -53,5 +54,43 @@ export class TasteDecoder {
             },
             protocolVersion,
         };
+    }
+    static validate(raw) {
+        if (!(raw instanceof Uint8Array)) {
+            throw new TypeError('Expected a Uint8Array');
+        }
+        if (raw.length !== PACKET_BYTES) {
+            throw new RangeError(`Expected ${PACKET_BYTES} bytes, got ${raw.length}`);
+        }
+        if (raw[Field.ProtocolVersion] !== PROTOCOL_VERSION) {
+            throw new RangeError(`Unsupported protocol version ${raw[Field.ProtocolVersion]}`);
+        }
+        const layout = raw[Field.UILayoutSpec];
+        const density = raw[Field.ElemDensity];
+        const mediaType = raw[Field.MediaType];
+        const velocity = raw[Field.AnimVelocity];
+        const hotBucket = raw[Field.HotBucket];
+        if (layout > 3)
+            throw new RangeError(`Invalid UILayoutSpec ${layout} for protocol v1`);
+        if (density > 15)
+            throw new RangeError(`Invalid ElemDensity ${density} for protocol v1`);
+        if (mediaType > 4)
+            throw new RangeError(`Invalid MediaType ${mediaType} for protocol v1`);
+        if (![16, 64, 128, 255].includes(velocity)) {
+            throw new RangeError(`Invalid AnimVelocity ${velocity} for protocol v1`);
+        }
+        const expectedGrain = mediaType === 2 ? 0 : 48;
+        if (raw[Field.GrainTexture] !== expectedGrain) {
+            throw new RangeError(`Invalid GrainTexture ${raw[Field.GrainTexture]} for protocol v1`);
+        }
+        if (raw[Field.LightField] !== 128) {
+            throw new RangeError(`Invalid LightField ${raw[Field.LightField]} for protocol v1`);
+        }
+        if (![0, 1, 3, 5, 7, 9, 11, 15].includes(hotBucket)) {
+            throw new RangeError(`Invalid HotBucket ${hotBucket} for protocol v1`);
+        }
+        if (raw[Field.Reserved14] !== 0) {
+            throw new RangeError(`Invalid Reserved14 ${raw[Field.Reserved14]} for protocol v1`);
+        }
     }
 }

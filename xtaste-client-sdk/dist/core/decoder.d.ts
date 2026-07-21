@@ -38,4 +38,5 @@ export declare class TasteDecoder {
      * Decode a 16-byte buffer into a structured preview card.
      */
     static decode(raw: Uint8Array): PreviewCard;
+    private static validate;
 }

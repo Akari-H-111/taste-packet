@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Mina",
+    "handle": "@mina",
+    "text": "Sixteen glass cells, one stable preview. The full image arrived without moving the frame."
+  },
+  {
+    "name": "Jon Bell",
+    "handle": "@jonb",
+    "text": "A compact contract lets the client reserve the right geometry before the API finishes."
+  },
+  {
+    "name": "Rae",
+    "handle": "@rae",
+    "text": "The preview packet is not the story. It simply gives the story a place to land."
+  },
+  {
+    "name": "Noah",
+    "handle": "@noah",
+    "text": "Fixed-size data makes the first render deterministic and easy to test."
+  },
+  {
+    "name": "Iris",
+    "handle": "@iris",
+    "text": "Existing REST and GraphQL paths keep carrying the full content independently."
+  },
+  {
+    "name": "Sam",
+    "handle": "@sam",
+    "text": "A protocol earns trust when its limits are as explicit as its benchmark."
+  },
+  {
+    "name": "Avery",
+    "handle": "@avery",
+    "text": "One interaction byte carries eight viewer-specific boolean states."
+  },
+  {
+    "name": "Nico",
+    "handle": "@nico",
+    "text": "Protocol version lives in the packet, so incompatible clients can fall back safely."
+  },
+  {
+    "name": "June",
+    "handle": "@june",
+    "text": "The SDK stays synchronous and has no runtime dependencies."
+  },
+  {
+    "name": "Kai",
+    "handle": "@kai",
+    "text": "Ten previews need 160 bytes before their full content arrives."
+  }
+]

@@ -35,10 +35,10 @@ export class TasteEncoder {
         const m = new TasteMatrix();
         // ── Row 0: Visual Ambiance ─────────────────────────────────────────
         //
-        // We derive four "vertex colors" from the post ID.  These are palette
-        // indices that the client maps to actual RGB values using a shared
-        // 256-color palette.  The hash is intentionally simple — we want
-        // determinism, not cryptographic strength.
+        // We derive four palette seeds from the post ID. The host maps these
+        // bytes to its own colors; v1 deliberately does not prescribe a palette.
+        // The hash is intentionally simple — we want determinism, not
+        // cryptographic strength.
         const hash = TasteEncoder.simpleHash(post.postId);
         m.set(Field.VertexColorA, (hash >>> 0) & 0xff);
         m.set(Field.VertexColorB, (hash >>> 8) & 0xff);

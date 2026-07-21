@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.1.1 - 2026-07-21
+
+### Added
+
+- Cross-language conformance vectors for UTF-16 text length and rounding ties.
+- Boundary coverage for engagement buckets, all interaction masks, and invalid packets.
+- CI verification of the packed npm artifact through its public export map.
+
+### Changed
+
+- Protocol v1 now states its exact numeric, string-length, palette, and decoder-validation semantics.
+- The browser demo decodes checked-in packets and fetches full content through a separate resource.
+
+### Fixed
+
+- Malformed v1 packets are rejected consistently by `supports()` and `decode()`.
+- Package creation now rebuilds `dist` through `prepack` instead of trusting stale artifacts.
+
 ## 1.1.0 - 2026-07-21
 
 ### Added

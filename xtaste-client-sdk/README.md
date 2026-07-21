@@ -43,7 +43,8 @@ console.log(preview.layout.mediaType); // 1
 ```
 
 The package has zero runtime dependencies and supports Node.js 20+ and modern
-browsers. See the [repository](https://github.com/Akari-H-111/taste-packet),
+browsers. The decoder rejects malformed and unsupported packets so hosts can
+fall back to their full-content path. See the [repository](https://github.com/Akari-H-111/taste-packet),
 [live demo](https://akari-h-111.github.io/taste-packet/tests/demo.html), and
 [protocol specification](https://github.com/Akari-H-111/taste-packet/blob/main/PROTOCOL.md)
 for verification details.

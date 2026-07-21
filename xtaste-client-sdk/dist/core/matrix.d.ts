@@ -5,7 +5,7 @@
  * 16 bytes — never more, never less.  This invariant gives every client a
  * predictable allocation and transport size.
  *
- * Layout (column-major byte indices):
+ * Layout (row-major byte indices):
  *
  *   Row 0  Visual Ambiance   │ Byte  0  1  2  3
  *   Row 1  Motion Dynamics    │ Byte  4  5  6  7

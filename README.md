@@ -103,9 +103,9 @@ npm test
 npm run benchmark
 ```
 
-`npm test` builds the published SDK surface and checks all runtime exports,
-the 16-byte round trip, input validation, the social bitmask, and unsupported
-protocol versions.
+`npm test` builds the published SDK surface and checks runtime exports, the
+canonical and cross-language vectors, all interaction masks, engagement
+boundaries, input validation, and malformed or unsupported packets.
 
 The deterministic benchmark compares a representative social timeline fixture containing
 100 posts with 100 encoded packets:
@@ -121,7 +121,8 @@ every production timeline or network.
 
 ## Browser demo
 
-The hosted demo imports the checked-in SDK build directly and needs no
+The hosted demo decodes ten checked-in packets, renders their previews, and
+fetches full content from a separate local JSON resource. It needs no
 credentials or bundler. To run the same files locally:
 
 ```bash

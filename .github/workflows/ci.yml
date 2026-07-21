@@ -25,3 +25,10 @@ jobs:
 
       - name: Run deterministic benchmark
         run: npm run benchmark
+
+      - name: Verify package artifact
+        run: |
+          npm pack ./xtaste-client-sdk --pack-destination /tmp
+          npm install --prefix /tmp/taste-smoke /tmp/xtaste-client-sdk-*.tgz
+          cd /tmp/taste-smoke
+          node --input-type=module -e "import('xtaste-client-sdk').then(({ PACKET_BYTES }) => { if (PACKET_BYTES !== 16) throw new Error('package smoke failed'); })"

@@ -1,6 +1,6 @@
 {
   "name": "xtaste-client-sdk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Zero-dependency TypeScript SDK for deterministic 16-byte semantic preview packets.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,8 @@
   ],
   "scripts": {
     "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepack": "npm run build"
   },
   "keywords": [
     "taste",
